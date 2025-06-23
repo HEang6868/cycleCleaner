@@ -21,23 +21,25 @@ import maya.cmds as mc
 #         print(textField)
 
 
-def poseFreeze(obj, posFrame, freezeLen): #, animLayer=False 
+def poseHold(obj, posFrame, holdLen, layer=None):
     """
     Saves a given object's position and rotation, and freezes it in world space for a given frame range to match its tranforms on a given frame.
     """
     mc.currentTime(posFrame)
     pos = mc.xform(obj, q=True, ws=True, t=True)
     rot = mc.xform(obj, q=True, ws=True, ro=True)
-    print(f"{obj=}\n{posFrame=}, {freezeLen=}\n{pos=} {rot=}")
-    for frm in range(posFrame, (posFrame+freezeLen)):
+    if not layer:
+        layer = "BaseAnimation"
+    print(f"{obj=}: {posFrame=}, {holdLen=}\n{pos=}\n{rot=}")
+    for frm in range(posFrame, (posFrame+holdLen)):
         mc.currentTime(frm)
         mc.xform(obj, ws=True,t=pos, ro=rot)
         mc.setKeyframe(obj, 
-                        attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"]
+                        attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"],
+                        animLayer=layer
                         )
         print(f"keyFrame {frm} Set")
         
-
 
 #poseFreeze("R_Hand", int(mc.currentTime(q=True)), 3)
 
@@ -46,11 +48,11 @@ def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
     Runs poseFreeze() and animLyrZero() functions for a given object for every loop.
     """
     for frame in range(start, end, cycleLen):
-        focusAnimLyr(animLayer)
-        poseFreeze(obj=obj, posFrame=frame+stepA, freezeLen=stepB-stepA)
-        # if animLayer:
-        #     resetFrame = int( (cycleLen + cycleLen - stepB) / 2 )
-        #     animLyrZero(obj=obj, frame=resetFrame, layer=animLayer)
+        print(f"\nRunning function loop on frame {frame}.")
+        poseHold(obj=obj, posFrame=frame+stepA, holdLen=stepB-stepA, layer=animLayer)
+        if animLayer:
+            resetFrame = int(frame + (cycleLen/2) + stepB)
+            animLyrZero(obj=obj, frame=resetFrame, layer=animLayer)
 
 
 # control = "R_Hand"
@@ -60,7 +62,7 @@ def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
 # cycle = 15
 # stepA = 3
 # stepB = 6
-# animLayer = "Test"
+# animLayer = "test_LYR"
 
 # funcLoop(startFrame, endFrame, cycle, control, stepA, stepB, animLayer)
 
@@ -88,6 +90,7 @@ def addToAnimLYR(obj=False, layer=False):
         mc.animLayer(layer, e=True, addSelectedObjects=True)
     #Otherwise, make the layer and add the object to it.
     else:
+        print(f"Creating animLayer: {layer}. \nAdding {obj} to it.")
         mc.animLayer(layer, addSelectedObjects=True)
 
 # addToAnimLYR("pCube1","Front_LYR")
@@ -97,20 +100,24 @@ def focusAnimLyr(layer):
     """
     Deselect all animLayers then select the created animLayer.
     """
-    animLayers = mc.ls(type="animLayer")
-    for animLyr in animLayers:
-        mc.animLayer(animLyr, e=True, selected=False)
-    mc.animLayer(layer, e=True, selected=True)
-
+    if mc.animLayer(layer, q=True, exists=True):
+        animLayers = mc.ls(type="animLayer")
+        for animLyr in animLayers:
+            mc.animLayer(animLyr, e=True, selected=False)
+        mc.animLayer(layer, e=True, selected=True)
+    else:
+        print(f"ERROR: AnimLayer: {layer} is missing.")
 
 
 def animLyrZero(obj, frame, layer):
     """
     Zeroes out a given object's animation on a given animLayer.
     """
-    print("zeroing out")
-    focusAnimLyr(layer)
-    mc.setKeyframe(obj, attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"], time=frame)
+    print(f"Zeroing out frame {frame} on animLayer {layer}")
+    mc.setKeyframe(obj, attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"], time=frame, animLayer=layer)
+    #focusAnimLyr(layer)
     mc.keyframe(obj, e=True, attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"], absolute=True, valueChange=0, time=(frame,))
 
-#animLyrZero("R_Hand", 11, "test")
+# list = [14, 29, 44, 59, 74]
+# for num in list:
+#     animLyrZero("R_Hand", num, "test_LYR")

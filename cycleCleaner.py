@@ -2,7 +2,7 @@ import maya.cmds as mc
 import cycleCleaner.utils as cUt
 import imp
 imp.reload(cUt)
-from cycleCleaner.utils import funcLoop, addToAnimLYR, focusAnimLyr
+from cycleCleaner.utils import funcLoop, addToAnimLYR
 
 
 
@@ -71,7 +71,7 @@ class CycleCleanup():
                                             columnAlign=(1, "left"),
                                             columnWidth2=(110, 50),
                                             )
-        mc.text("The frame range of one step.", parent=stepLenLayout)
+        mc.text("The frame range of one walk cycle.", parent=stepLenLayout)
 
         #Create a layout to hold the frame range inputs.
         stepFramesLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=4, columnAlign=(3, "left"))
@@ -129,6 +129,21 @@ class CycleCleanup():
                     )
         #Button that runs the script.
         mc.button(label="Clean Up walk Cycle!!", parent=mainLayout, command=self.cycleClean)
+
+
+        #DEBUG SETUP
+        mc.textFieldButtonGrp(self.rFootInput, e=True, text="R_Hand")
+        mc.textFieldButtonGrp(self.lFootInput, e=True, text="L_Hand")
+        mc.textFieldGrp(self.fRangeStartInput, e=True, text="1")
+        mc.textFieldButtonGrp(self.fRangeEndInput, e=True, text="120")
+        mc.radioButtonGrp(self.startFootRBtns, e=True, sl=1)
+        mc.textFieldGrp(self.stepLenInput, e=True, text="15")
+        mc.textFieldGrp(self.stepStartInput, e=True, text="3")
+        mc.textFieldGrp(self.stepEndInput, e=True, text="6")
+        mc.checkBox(self.animLYRChkBox, e=True, v=True)
+        self.UICheck()
+        mc.textFieldGrp(self.animLYRNameInput, e=True, text="test_LYR")
+
 
         mc.showWindow()
 
@@ -211,10 +226,10 @@ class CycleCleanup():
         if self.animLYRName:
             for foot in footOrder:
                 addToAnimLYR(foot, self.animLYRName)
-            focusAnimLyr(self.animLYRName)
+            #focusAnimLyr(self.animLYRName)
             print(self.animLYRName)
         funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[0], self.getStepA, self.getStepB, self.animLYRName)
-        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], self.getStepA+self.getCycle, self.getStepB+self.getCycle, self.animLYRName)
+        # funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], self.getStepA+(self.getCycle/2), self.getStepB+(self.getCycle/2), self.animLYRName)
 
         # if self.animLYRName:
         #     halfStep = int(self.getCycle / 2)
@@ -226,10 +241,10 @@ class CycleCleanup():
         if autoKey:
             mc.autoKeyframe(state=True)
 
-        
+        mc.currentTime(self.getFRangeStart)
         
 
-
+mc.file("WalkCycleCleanupTest.ma", open=True, force=True)
 CycleCleanup()
 
 
