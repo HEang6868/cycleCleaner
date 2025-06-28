@@ -1,9 +1,10 @@
 import maya.cmds as mc
 import cycleCleaner.utils as cUt
 import imp
-imp.reload(cUt)
-from cycleCleaner.utils import funcLoop, addToAnimLYR
 
+imp.reload(cUt)
+
+from cycleCleaner.utils import funcLoop, addToAnimLYR, focusAnimLyr
 
 
 ###############################
@@ -16,7 +17,7 @@ class CycleCleanup():
     """
     def __init__(self):
         self.winName = "WalkCycleCleanup"
-        self.winWidth = 440
+        self.winWidth = 460
         self.winHeight = 360
 
         if mc.window(self.winName, exists=True):
@@ -85,7 +86,7 @@ class CycleCleanup():
                                         columnAlign=(1, "left"),
                                         columnWidth2=(20, 50),
                                         )
-        mc.text("The frames in the cycle when\n the foot is on the ground.", parent=stepFramesLayout)
+        mc.text("The frames in the cycle when\n the starting foot is on the ground.", parent=stepFramesLayout)
 
         #Create a layout to hold the animLayer options.
         animLYRLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=4)
@@ -131,19 +132,18 @@ class CycleCleanup():
         mc.button(label="Clean Up walk Cycle!!", parent=mainLayout, command=self.cycleClean)
 
 
-        #DEBUG SETUP
-        mc.textFieldButtonGrp(self.rFootInput, e=True, text="R_Hand")
-        mc.textFieldButtonGrp(self.lFootInput, e=True, text="L_Hand")
-        mc.textFieldGrp(self.fRangeStartInput, e=True, text="1")
-        mc.textFieldButtonGrp(self.fRangeEndInput, e=True, text="120")
-        mc.radioButtonGrp(self.startFootRBtns, e=True, sl=1)
-        mc.textFieldGrp(self.stepLenInput, e=True, text="15")
-        mc.textFieldGrp(self.stepStartInput, e=True, text="3")
-        mc.textFieldGrp(self.stepEndInput, e=True, text="6")
-        mc.checkBox(self.animLYRChkBox, e=True, v=True)
-        self.UICheck()
-        mc.textFieldGrp(self.animLYRNameInput, e=True, text="test_LYR")
-
+        # #DEBUG SETUP
+        # mc.textFieldButtonGrp(self.rFootInput, e=True, text="R_Foot")
+        # mc.textFieldButtonGrp(self.lFootInput, e=True, text="L_Foot")
+        # mc.textFieldGrp(self.fRangeStartInput, e=True, text="1")
+        # mc.textFieldButtonGrp(self.fRangeEndInput, e=True, text="120")
+        # mc.radioButtonGrp(self.startFootRBtns, e=True, sl=1)
+        # mc.textFieldGrp(self.stepLenInput, e=True, text="15")
+        # mc.textFieldGrp(self.stepStartInput, e=True, text="2")
+        # mc.textFieldGrp(self.stepEndInput, e=True, text="7")
+        # mc.checkBox(self.animLYRChkBox, e=True, v=True)
+        # self.UICheck()
+        # mc.textFieldGrp(self.animLYRNameInput, e=True, text="test_LYR")
 
         mc.showWindow()
 
@@ -191,7 +191,8 @@ class CycleCleanup():
         """
         Checks that the window is filled out properly and gets the data in it if it is.
         """
-        try:
+        #Try getting the data from the inputs in the tool window and save them as variables.
+        try:        
             self.getRFootCtrl = mc.textFieldButtonGrp(self.rFootInput, q=True, text=True)
             self.getLFootCtrl = mc.textFieldButtonGrp(self.lFootInput, q=True, text=True)
             self.getFRangeStart = int(float(mc.textFieldGrp(self.fRangeStartInput, q=True, text=True)))
@@ -212,40 +213,40 @@ class CycleCleanup():
 
     def cycleClean(self, *args):
         self.getData()              #-> self.getRFootCtrl, self.getLFootCtrl, self.getFRangeStart, self.getFRangeEnd, self.getStartFoot, self.getCycle, self.getStepA, self.getStepB, self.animLYRName
-        #Set which foot is in front.
+        
+        #Put the given contols into a list, ordered based on which side is selected in the "Starting Foot" option.
         if self.getStartFoot == 1:
             footOrder = [self.getRFootCtrl, self.getLFootCtrl]
         else:
             footOrder = [self.getLFootCtrl, self.getRFootCtrl]
-        print(footOrder)
-        #Check if autokey is on and turn it off it is.
+        print(f"{footOrder}")
+
+        #Check if autokey is on and turn it off so it doesn't accidentally set keys when moving objects around.
         autoKey = mc.autoKeyframe(q=True, state=True)
         if autoKey:
             mc.autoKeyframe(state=False)
+
         #If an animLayer is wanted, create and/or add the foot controls to it.
         if self.animLYRName:
             for foot in footOrder:
                 addToAnimLYR(foot, self.animLYRName)
-            #focusAnimLyr(self.animLYRName)
+            focusAnimLyr(self.animLYRName)
             print(self.animLYRName)
-        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[0], self.getStepA, self.getStepB, self.animLYRName)
-        # funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], self.getStepA+(self.getCycle/2), self.getStepB+(self.getCycle/2), self.animLYRName)
 
-        # if self.animLYRName:
-        #     halfStep = int(self.getCycle / 2)
-        #     for foot in footOrder:
-        #         for frame in range(self.getFRangeStart, self.getFRangeEnd, halfStep+self.getCycle):
-        #             animLyrZero(foot, frame,self.animLYRName)
+        #Run funcLoop() for each foot with offset frame values based on the given walk cycle length.
+        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[0], self.getStepA, self.getStepB, self.animLYRName)
+        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], int(self.getStepA+(self.getCycle/2) ), int(self.getStepB+(self.getCycle/2)), self.animLYRName)
         
         #If autokey was on when the tool was run, turn it back on.
         if autoKey:
             mc.autoKeyframe(state=True)
 
+        #Reset the timeslider to the start of the walk cycle.
         mc.currentTime(self.getFRangeStart)
         
 
-mc.file("WalkCycleCleanupTest.ma", open=True, force=True)
-CycleCleanup()
+#mc.file("WalkCycleCleanupTest.ma", open=True, force=True)
+#CycleCleanup()
 
 
 

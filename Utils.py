@@ -25,51 +25,79 @@ def poseHold(obj, posFrame, holdLen, layer=None):
     """
     Saves a given object's position and rotation, and freezes it in world space for a given frame range to match its tranforms on a given frame.
     """
+    #Sets the timeline to the first frame it wants to hold.
     mc.currentTime(posFrame)
-    pos = mc.xform(obj, q=True, ws=True, t=True)
-    rot = mc.xform(obj, q=True, ws=True, ro=True)
+    #Sets the animLayer if one hasn't been given.
     if not layer:
         layer = "BaseAnimation"
-    print(f"{obj=}: {posFrame=}, {holdLen=}\n{pos=}\n{rot=}")
+    else:
+        attributes=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"]
+        #Reset the keyframe values at the first frame where the foot holds.
+        mc.setKeyframe(obj, 
+                        attribute=attributes,
+                        animLayer=layer,
+                        value=0,
+                        noResolve=True,
+                        time=posFrame
+                        )
+        #Follow up setting the key with setting the matching attribute on the object to force the scene to update. (Otherwise the object will be in the wrong place when the following keys are set.)
+        for attr in attributes:
+            attrVal = mc.keyframe(obj, q=True, attribute=attr, time=(posFrame,), absolute=True, eval=True)[0]
+            print(f"{attr}={attrVal}")
+            mc.setAttr(f"{obj}.{attr}", attrVal)
+
+    #Make a locator and match its translation and rotation to the control.
+    conLoc = mc.spaceLocator()
+    mc.delete(mc.parentConstraint(obj, conLoc, mo=False) )
+
+    # For each loop of the walk cycle,
     for frm in range(posFrame, (posFrame+holdLen)):
+        #Set the current frame to the given frame.
         mc.currentTime(frm)
-        mc.xform(obj, ws=True,t=pos, ro=rot)
+
+        # Match the object's tranforms to the locator.
+        mc.matchTransform(obj, conLoc)
+
+        # Set a keyframe.
         mc.setKeyframe(obj, 
                         attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"],
                         animLayer=layer
                         )
-        print(f"keyFrame {frm} Set")
         
+        print(f"keyFrame {frm} Set")
+    
+    #Delete the locator.
+    mc.delete(conLoc)
 
-#poseFreeze("R_Hand", int(mc.currentTime(q=True)), 3)
+        
+# FUNCTION TEST
+# poseHold("R_Foot", int(mc.currentTime(q=True)), 4, layer="test_LYR")
+
 
 def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
     """
-    Runs poseFreeze() and animLyrZero() functions for a given object for every loop.
+    Runs poseFreeze() and animLyrZero() functions for a given object for every cycle.
     """
     for frame in range(start, end, cycleLen):
         print(f"\nRunning function loop on frame {frame}.")
         poseHold(obj=obj, posFrame=frame+stepA, holdLen=stepB-stepA, layer=animLayer)
-        if animLayer:
-            resetFrame = int(frame + (cycleLen/2) + stepB)
-            animLyrZero(obj=obj, frame=resetFrame, layer=animLayer)
+        
 
+# FUNCTION TEST
 
-# control = "R_Hand"
-# startFrame = 1
-# endFrame = 110
-# freezeLen = 3
-# cycle = 15
-# stepA = 3
-# stepB = 6
-# animLayer = "test_LYR"
-
+control = "R_Hand"
+startFrame = 1
+endFrame = 110
+cycle = 15
+stepA = 3
+stepB = 6
+animLayer = "test_LYR"
+ 
 # funcLoop(startFrame, endFrame, cycle, control, stepA, stepB, animLayer)
 
 # control = "L_Hand"
 # startFrame = 1
 # endframe = 110
-# freezeLen = 3
 # cycle = 15
 # stepA = 3
 # stepB = 6
@@ -93,6 +121,7 @@ def addToAnimLYR(obj=False, layer=False):
         print(f"Creating animLayer: {layer}. \nAdding {obj} to it.")
         mc.animLayer(layer, addSelectedObjects=True)
 
+# FUNCTION TEST
 # addToAnimLYR("pCube1","Front_LYR")
 # addToAnimLYR("pCube2","Front_LYR")
 
@@ -109,15 +138,5 @@ def focusAnimLyr(layer):
         print(f"ERROR: AnimLayer: {layer} is missing.")
 
 
-def animLyrZero(obj, frame, layer):
-    """
-    Zeroes out a given object's animation on a given animLayer.
-    """
-    print(f"Zeroing out frame {frame} on animLayer {layer}")
-    mc.setKeyframe(obj, attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"], time=frame, animLayer=layer)
-    #focusAnimLyr(layer)
-    mc.keyframe(obj, e=True, attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"], absolute=True, valueChange=0, time=(frame,))
 
-# list = [14, 29, 44, 59, 74]
-# for num in list:
-#     animLyrZero("R_Hand", num, "test_LYR")
+
