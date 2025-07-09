@@ -40,30 +40,26 @@ def poseHold(obj, posFrame, holdLen, layer=None):
                         noResolve=True,
                         time=posFrame
                         )
-        #Follow up setting the key with setting the matching attribute on the object to force the scene to update. (Otherwise the object will be in the wrong place when the following keys are set.)
+        #Update the scene by changing the current frame (Otherwise the object will be in the wrong place when the following keys are set.)
         for attr in attributes:
-            attrVal = mc.keyframe(obj, q=True, attribute=attr, time=(posFrame,), absolute=True, eval=True)[0]
-            print(f"{attr}={attrVal}")
-            mc.setAttr(f"{obj}.{attr}", attrVal)
+            mc.currentTime(posFrame)
 
     #Make a locator and match its translation and rotation to the control.
     conLoc = mc.spaceLocator()
-    mc.delete(mc.parentConstraint(obj, conLoc, mo=False) )
+    #mc.delete(mc.parentConstraint(obj, conLoc, mo=False) )
+    mc.matchTransform(conLoc, obj)
 
     # For each loop of the walk cycle,
     for frm in range(posFrame, (posFrame+holdLen)):
         #Set the current frame to the given frame.
         mc.currentTime(frm)
-
         # Match the object's tranforms to the locator.
         mc.matchTransform(obj, conLoc)
-
         # Set a keyframe.
         mc.setKeyframe(obj, 
                         attribute=["translateX", "translateY", "translateZ", "rotateX", "rotateY", "rotateZ"],
                         animLayer=layer
                         )
-        
         print(f"keyFrame {frm} Set")
     
     #Delete the locator.
@@ -85,13 +81,13 @@ def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
 
 # FUNCTION TEST
 
-control = "R_Hand"
-startFrame = 1
-endFrame = 110
-cycle = 15
-stepA = 3
-stepB = 6
-animLayer = "test_LYR"
+# control = "R_Hand"
+# startFrame = 1
+# endFrame = 110
+# cycle = 15
+# stepA = 3
+# stepB = 6
+# animLayer = "test_LYR"
  
 # funcLoop(startFrame, endFrame, cycle, control, stepA, stepB, animLayer)
 

@@ -66,13 +66,13 @@ class CycleCleanup():
                                                 columnWidth3=(110, 80, 50)
                                                 )
         #Create the layout to hold the cycle length input.
-        stepLenLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=2)
+        stepLenLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=2, columnAlign=(2, "left"))
         self.stepLenInput = mc.textFieldGrp(label="Cycle Length: ",
                                              parent=stepLenLayout,
                                             columnAlign=(1, "left"),
                                             columnWidth2=(110, 50),
                                             )
-        mc.text("The frame range of one walk cycle.", parent=stepLenLayout)
+        mc.text("The frame range from one contact frame \nto the frame before the next one.", parent=stepLenLayout)
 
         #Create a layout to hold the frame range inputs.
         stepFramesLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=4, columnAlign=(3, "left"))
@@ -86,7 +86,7 @@ class CycleCleanup():
                                         columnAlign=(1, "left"),
                                         columnWidth2=(20, 50),
                                         )
-        mc.text("The frames in the cycle when\n the starting foot is on the ground.", parent=stepFramesLayout)
+        mc.text("The frames in the cycle when\n the starting foot is contacting the ground.", parent=stepFramesLayout)
 
         #Create a layout to hold the animLayer options.
         animLYRLayout = mc.rowLayout(parent=mainFormLayout, numberOfColumns=4)
@@ -246,7 +246,7 @@ class CycleCleanup():
         
 
 #mc.file("WalkCycleCleanupTest.ma", open=True, force=True)
-#CycleCleanup()
+CycleCleanup()
 
 
 
