@@ -4,7 +4,7 @@ import imp
 
 imp.reload(cUt)
 
-from cycleCleaner.utils import funcLoop, addToAnimLYR, focusAnimLyr
+from cycleCleaner.utils import function_loop, add_to_anim_lyr, focus_anim_lyr
 
 
 ###############################
@@ -13,7 +13,7 @@ from cycleCleaner.utils import funcLoop, addToAnimLYR, focusAnimLyr
 
 class CycleCleanup():
     """
-    Tool window that rebuilds a joint chain to have a chosen number of joints.
+    Tool window that cleans up sliding feet in an animated cycle.
     """
     def __init__(self):
         self.winName = "WalkCycleCleanup"
@@ -35,13 +35,13 @@ class CycleCleanup():
                                            columnAlign=(1, "left"), 
                                            columnWidth3=(110, 140, 20),
                                            buttonLabel=" < ", 
-                                           buttonCommand=lambda: self.inputObj(self.rFootInput)
+                                           buttonCommand=lambda: self.input_obj(self.rFootInput)
                                            )
         self.lFootInput = mc.textFieldButtonGrp(label="Left Foot Control: ", 
                                            columnAlign=(1, "left"), 
                                            columnWidth3=(110, 140, 20),
                                            buttonLabel=" < ", 
-                                           buttonCommand=lambda: self.inputObj(self.lFootInput)
+                                           buttonCommand=lambda: self.input_obj(self.lFootInput)
                                            )
         #Create a layout to hold the frame range inputs.
         fRangeLayout = mc.rowLayout(numberOfColumns=3)
@@ -55,7 +55,7 @@ class CycleCleanup():
                                         columnAlign=(1, "left"),
                                         columnWidth3=(20, 50, 20),
                                         buttonLabel=" < ",
-                                        buttonCommand=self.getFrameRange
+                                        buttonCommand=self.get_frame_range
                                         )
         #Create the starting foot radioButtonGrp.
         self.startFootRBtns = mc.radioButtonGrp(label="Starting Foot: ",
@@ -94,7 +94,7 @@ class CycleCleanup():
         self.animLYRChkBox = mc.checkBox(label="", 
                                          parent=animLYRLayout,
                                          width=20,
-                                         changeCommand=self.UICheck
+                                         changeCommand=self.ui_check
                                          )
         self.animLYRNameInput = mc.textFieldGrp(placeholderText="Layer Name",
                                                 parent=animLYRLayout,
@@ -129,7 +129,7 @@ class CycleCleanup():
                                      )
                     )
         #Button that runs the script.
-        mc.button(label="Clean Up walk Cycle!!", parent=mainLayout, command=self.cycleClean)
+        mc.button(label="Clean Up walk Cycle!!", parent=mainLayout, command=self.cycle_clean)
 
 
         # #DEBUG SETUP
@@ -152,7 +152,7 @@ class CycleCleanup():
 ###   UI FUNCTIONS   ###
 ########################
 
-    def inputObj(self, field):
+    def input_obj(self, field):
         """
         Gets the last selected object and inputs its name into the given textField.
         """
@@ -160,7 +160,7 @@ class CycleCleanup():
         mc.textFieldButtonGrp(field, e=True, text=selObj)
 
     
-    def getFrameRange(self, *args):
+    def get_frame_range(self, *args):
         """
         Checks if there's a selection in the timeline. If there is, input the selected frame range into the fRange textFields. Otherwise input the current frame range.
         """
@@ -175,7 +175,7 @@ class CycleCleanup():
         mc.textFieldGrp(self.fRangeEndInput, e=True, text=end)
     
 
-    def UICheck(self, *args):
+    def ui_check(self, *args):
         """
         Checks the animLayer checkbox and toggles the matching textField.
         """
@@ -187,7 +187,7 @@ class CycleCleanup():
 ###   TOOL FUNCTIONS   ###
 ##########################
 
-    def getData(self, *args):
+    def get_data(self, *args):
         """
         Checks that the window is filled out properly and gets the data in it if it is.
         """
@@ -211,8 +211,8 @@ class CycleCleanup():
         return self.getRFootCtrl, self.getLFootCtrl, self.getFRangeStart, self.getFRangeEnd, self.getStartFoot, self.getCycle, self.getStepA, self.getStepB, self.animLYRName
 
 
-    def cycleClean(self, *args):
-        self.getData()              #-> self.getRFootCtrl, self.getLFootCtrl, self.getFRangeStart, self.getFRangeEnd, self.getStartFoot, self.getCycle, self.getStepA, self.getStepB, self.animLYRName
+    def cycle_clean(self, *args):
+        self.get_data()              #-> self.getRFootCtrl, self.getLFootCtrl, self.getFRangeStart, self.getFRangeEnd, self.getStartFoot, self.getCycle, self.getStepA, self.getStepB, self.animLYRName
         
         #Put the given contols into a list, ordered based on which side is selected in the "Starting Foot" option.
         if self.getStartFoot == 1:
@@ -229,13 +229,13 @@ class CycleCleanup():
         #If an animLayer is wanted, create and/or add the foot controls to it.
         if self.animLYRName:
             for foot in footOrder:
-                addToAnimLYR(foot, self.animLYRName)
-            focusAnimLyr(self.animLYRName)
+                add_to_anim_lyr(foot, self.animLYRName)
+            focus_anim_lyr(self.animLYRName)
             print(self.animLYRName)
 
         #Run funcLoop() for each foot with offset frame values based on the given walk cycle length.
-        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[0], self.getStepA, self.getStepB, self.animLYRName)
-        funcLoop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], int(self.getStepA+(self.getCycle/2) ), int(self.getStepB+(self.getCycle/2)), self.animLYRName)
+        function_loop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[0], self.getStepA, self.getStepB, self.animLYRName)
+        function_loop(self.getFRangeStart, self.getFRangeEnd, self.getCycle, footOrder[1], int(self.getStepA+(self.getCycle/2) ), int(self.getStepB+(self.getCycle/2)), self.animLYRName)
         
         #If autokey was on when the tool was run, turn it back on.
         if autoKey:

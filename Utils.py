@@ -21,7 +21,7 @@ import maya.cmds as mc
 #         print(textField)
 
 
-def poseHold(obj, posFrame, holdLen, layer=None):
+def hold_pose(obj, posFrame, holdLen, layer=None):
     """
     Saves a given object's position and rotation, and freezes it in world space for a given frame range to match its tranforms on a given frame.
     """
@@ -70,13 +70,13 @@ def poseHold(obj, posFrame, holdLen, layer=None):
 # poseHold("R_Foot", int(mc.currentTime(q=True)), 4, layer="test_LYR")
 
 
-def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
+def function_loop(start, end, cycleLen, obj, stepA, stepB, animLayer):
     """
     Runs poseFreeze() and animLyrZero() functions for a given object for every cycle.
     """
     for frame in range(start, end, cycleLen):
         print(f"\nRunning function loop on frame {frame}.")
-        poseHold(obj=obj, posFrame=frame+stepA, holdLen=stepB-stepA, layer=animLayer)
+        hold_pose(obj=obj, posFrame=frame+stepA, holdLen=stepB-stepA, layer=animLayer)
         
 
 # FUNCTION TEST
@@ -101,7 +101,7 @@ def funcLoop(start, end, cycleLen, obj, stepA, stepB, animLayer):
 # funcLoop(startFrame, endframe, cycle, control, stepA, stepB)
 
 
-def addToAnimLYR(obj=False, layer=False):
+def add_to_anim_lyr(obj=False, layer=False):
     """
     Checks for an animLayer and creates it if it doesn't exist. Adds a given object to the layer.
     """
@@ -121,7 +121,7 @@ def addToAnimLYR(obj=False, layer=False):
 # addToAnimLYR("pCube1","Front_LYR")
 # addToAnimLYR("pCube2","Front_LYR")
 
-def focusAnimLyr(layer):
+def focus_anim_lyr(layer):
     """
     Deselect all animLayers then select the created animLayer.
     """
