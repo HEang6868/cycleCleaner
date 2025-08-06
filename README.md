@@ -1,13 +1,9 @@
 This is an animation tool built in Maya 2025 meant for cleaning sliding feet in a walk cycle.
 
-To install it, place this folder wherever you save Maya scripts (recommended: C:/Users/Documents/maya/scripts) and follow these steps:
-1. Close Maya if it's open.
-2. In your Maya version folder (ex. C:\Users\Documents\maya\2025), find a folder named "modules", or create one if it doesn't exist.
-3. Write the following in a blank text document, using notepad or a similar app, replacing the file path in the example with wherever you saved this tool.:
-   "+ CycleCleaner 1.0 C:/Users/Documents/maya/scripts
-   C:/Users/Documents/maya/scripts"
-4. Launch Maya.
-5. In a text editor, open the file named, cycleCleanerINSTALL.py and copy its text into a shelf button in Maya.
+INSTALLATION:
+- Save the folder this file is in to your maya/scripts directory.
+- Drag and drop cycleCleaner_INSTALL.py into your Maya viewport.
+- A button should be created in your "custom" shelf.
 
 Pressing the newly added button should launch the tool.
 
